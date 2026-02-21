@@ -143,6 +143,9 @@ def install_and_configure_thread():
         run_command(
             "winget install --id=Tailscale.Tailscale -e --source=winget "
             "--silent --accept-package-agreements --accept-source-agreements"
+            #"--accept-package-licenses"
+            #"winget install --id=Tailscale.Tailscale -e --source=winget "
+            #"--silent --accept-package-agreements --accept-source-agreements"
         )
         progress_bar.stop()
         progress_bar['value'] = 30
@@ -223,6 +226,9 @@ frame3.pack()
 frame4 = tk.Frame(root, pady=5)
 frame4.pack()
 
+frame5 = tk.Frame(root, pady=5)
+frame5.pack()
+
 tk.Label(frame1, text="Enter Login Key-").pack(side="left")
 auth_entry = tk.Entry(frame1, width=35)
 auth_entry.pack(side="left")
@@ -236,20 +242,130 @@ tk.Radiobutton(frame2, text="Engineering", variable=role_var, value="admin",
                command=lambda: ip_entry.config(state="disabled")).pack(side="left", padx=5)
 
 # IP entry
-tk.Label(frame3, text="Enter plc IP in subnet (e.g., 192.168.0.15):").pack(side="left", padx=5)
+tk.Label(frame3, text="Enter plc IP (e.g., 192.168.0.15):").pack(side="left", padx=5)
 ip_entry = tk.Entry(frame3, width=30)
 ip_entry.pack(side="left", padx=5)
 ip_entry.config(state="normal")  # default client
 
-# Install button
-install_btn = tk.Button(frame4, text="Install & Configure", command=install_and_configure)
-install_btn.pack(pady=10)
-
 # Progress bar
-progress_label = tk.Label(root, text="")
-progress_label.pack()
-progress_bar = ttk.Progressbar(root, length=450, mode='determinate')
-progress_bar.pack(pady=10)
+progress_label = tk.Label(frame4, text="Progress")
+progress_label.pack(side="left", padx=5)
+progress_bar = ttk.Progressbar(frame4, length=450, mode='determinate')
+progress_bar.pack(side="left", padx=5)
+
+# Install button
+install_btn = tk.Button(frame5, text="Install & Configure", command=install_and_configure)
+install_btn.pack(pady=5)
+
+######################################################################### pc ip address#############################
+
+# --------------------------
+# Get list of network adapters
+# --------------------------
+def get_network_adapters():
+    adapters = []
+    try:
+        result = subprocess.run("netsh interface show interface", 
+                                shell=True, capture_output=True, text=True)
+        lines = result.stdout.splitlines()
+        for line in lines:
+            line = line.strip()
+            # Skip headers and empty lines
+            if line.startswith("Admin") or not line:
+                continue
+            # Columns: Admin State, State, Type, Interface Name
+            parts = line.split(None, 3)
+            if len(parts) == 4:
+                adapters.append(parts[3])
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+    return adapters
+
+# --------------------------
+# Apply IP + subnet to adapter
+# --------------------------
+def set_ip(adapter, ip, subnet):
+    try:
+        cmd = f'netsh interface ipv4 set address name="{adapter}" static {ip} {subnet}'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        if result.returncode == 0:
+            messagebox.showinfo("Success", f"IP set for {adapter}")
+        else:
+            messagebox.showerror("Error", result.stderr)
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+# --------------------------
+# GUI
+# --------------------------
+def refresh_adapters():
+    adapters = get_network_adapters()
+    adapter_combo['values'] = adapters
+    if adapters:
+        adapter_combo.current(0)
+
+def apply_ip():
+    adapter = adapter_combo.get()
+    ip = ip_entry.get().strip()
+    subnet = subnet_entry.get().strip()
+    if not adapter or not ip or not subnet:
+        messagebox.showwarning("Warning", "All fields are required")
+        return
+    set_ip(adapter, ip, subnet)
+
+def get_adapter_ip(adapter):
+    try:
+        result = subprocess.run(f'netsh interface ipv4 show addresses name="{adapter}"',
+                                shell=True, capture_output=True, text=True)
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if line.startswith("IP Address"):
+                # Example line: IP Address: 192.168.1.100
+                return line.split(":")[-1].strip()
+    except:
+        return "port not found"
+    return "port not found"
+
+def update_current_ip():
+    adapter = adapter_combo.get()
+    if adapter:
+        ip = get_adapter_ip(adapter)
+        current_ip_label.config(text=f"ip: {ip}")
+    root.after(1000, update_current_ip)  # update every 1 second
+
+frame21 = tk.Frame(root, pady=5)
+frame21.pack()
+frame22 = tk.Frame(root, pady=5)
+frame22.pack()
+frame23 = tk.Frame(root, pady=5)
+frame23.pack()
+frame24 = tk.Frame(root, pady=5)
+frame24.pack()
+
+
+tk.Label(frame21, text="Select Network Adapter:").pack(side="left", padx=5)
+adapter_combo = ttk.Combobox(frame21, width=40)
+adapter_combo.pack(side="left", padx=5)
+
+tk.Button(frame21, text="Refresh Adapters", command=refresh_adapters).pack(side="left", padx=5)
+
+tk.Label(frame22, text="Set Pc IP").pack(side="left", padx=5)
+ip_entry = tk.Entry(frame22, width=30)
+ip_entry.pack(side="left", padx=5)
+current_ip_label = tk.Label(frame22, text="Current IP: N/A")
+current_ip_label.pack(side="left", padx=5)
+
+tk.Label(frame23, text="Set Pc Subnet Mask").pack(side="left", padx=5)
+subnet_entry = tk.Entry(frame23, width=30)
+subnet_entry.pack(side="left", padx=5)
+
+tk.Button(frame23, text="Set Ip", command=apply_ip).pack(side="left", padx=5)
+
+# Initial load
+refresh_adapters()
+update_current_ip()
+################################################## end ip adress change laptop###################################
+
 
 # Status bar
 status_label = tk.Label(root, text="", relief="sunken", anchor="w")
