@@ -236,10 +236,10 @@ auth_entry.pack(side="left")
 # Role selection
 role_var = tk.StringVar(value="client")
 tk.Label(frame2, text="Select User Type:").pack(side="left", padx=5)
-tk.Radiobutton(frame2, text="Client", variable=role_var, value="client",
+tk.Radiobutton(frame2, text="User", variable=role_var, value="client",
                command=lambda: ip_entry.config(state="normal")).pack(side="left", padx=5)
-tk.Radiobutton(frame2, text="Engineering", variable=role_var, value="admin",
-               command=lambda: (ip_entry.config(state="disabled")).pack(side="left", padx=5))
+tk.Radiobutton(frame2, text="Engineer", variable=role_var, value="admin",
+               command=lambda: ip_entry.config(state="disabled")).pack(side="left", padx=5)
 
 # IP entry
 tk.Label(frame3, text="Enter plc IP (e.g., 192.168.0.15):").pack(side="left", padx=5)
