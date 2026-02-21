@@ -239,7 +239,7 @@ tk.Label(frame2, text="Select User Type:").pack(side="left", padx=5)
 tk.Radiobutton(frame2, text="Client", variable=role_var, value="client",
                command=lambda: ip_entry.config(state="normal")).pack(side="left", padx=5)
 tk.Radiobutton(frame2, text="Engineering", variable=role_var, value="admin",
-               command=lambda: ip_entry.config(state="disabled")).pack(side="left", padx=5)
+               command=lambda: (ip_entry.config(state="disabled")).pack(side="left", padx=5))
 
 # IP entry
 tk.Label(frame3, text="Enter plc IP (e.g., 192.168.0.15):").pack(side="left", padx=5)
@@ -306,7 +306,7 @@ def refresh_adapters():
 
 def apply_ip():
     adapter = adapter_combo.get()
-    ip = ip_entry.get().strip()
+    ip = ip_entry2.get().strip()
     subnet = subnet_entry.get().strip()
     if not adapter or not ip or not subnet:
         messagebox.showwarning("Warning", "All fields are required")
@@ -350,8 +350,8 @@ adapter_combo.pack(side="left", padx=5)
 tk.Button(frame21, text="Refresh Adapters", command=refresh_adapters).pack(side="left", padx=5)
 
 tk.Label(frame22, text="Set Pc IP").pack(side="left", padx=5)
-ip_entry = tk.Entry(frame22, width=30)
-ip_entry.pack(side="left", padx=5)
+ip_entry2 = tk.Entry(frame22, width=30)
+ip_entry2.pack(side="left", padx=5)
 current_ip_label = tk.Label(frame22, text="Current IP: N/A")
 current_ip_label.pack(side="left", padx=5)
 
