@@ -1,5 +1,7 @@
 #py -m pip install pyinstaller  ''install pyinstaller if you want to convert this to exe
 #python -m PyInstaller --onefile --noconsole --icon=ngPy.ico fullSetupFile.py    ''run this command in terminal to convert to exe''
+# note- add ng at the second last 2 chars and remove auth-key- to generate the full key from the suffix provided by user. for example if user provides 123456789 then the generated key will
+# tskey-auth-k3UF6uj3b111CNTRL-EgXpRQj3c4aMBs9Bnfq75aY7qJ8y8YTsh to be replace as k3UF6uj3b111CNTRL-EgXpRQj3c4aMBs9Bnfq75aY7qJ8y8YTsngh
 
 import subprocess
 import ctypes
